@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  nestjs:
+    build: 
+      context: .
+      target: development
+    volumes:
+      - ./:/usr/src/app
+    command: npm run start:dev
+    ports:
+      - 3000:3000
+
+  db:
+    image: mysql:8.0.19
+    environment:
+      - MYSQL_DATABASE=GamesDB
+      - MYSQL_ROOT_PASSWORD=secr3t!
+    restart: always
+    volumes:
+      - ./mysql:/var/lib/mysql
+    container_name: db
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
