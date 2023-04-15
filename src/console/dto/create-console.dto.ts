@@ -36,4 +36,13 @@ export class CreateConsoleDto {
   @IsOptional()
   @IsInt()
   isSpecialEdition: number;
+
+  @IsNotEmpty()
+  manufacturer: number;
+
+  @IsOptional()
+  type: number;
+
+  @IsOptional()
+  tags?: number[];
 }

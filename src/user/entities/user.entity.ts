@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Collection } from 'src/collection/entities/collection.entity';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'users' })
 export class User {
@@ -22,4 +23,7 @@ export class User {
 
   @Column('varchar', { select: false })
   password: string;
+
+  @OneToOne(() => Collection, (collection) => collection.user)
+  collection: Collection;
 }

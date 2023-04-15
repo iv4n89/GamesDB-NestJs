@@ -15,4 +15,19 @@ export class CreateGameDto {
 
   @IsNotEmpty()
   console: number;
+
+  @IsOptional()
+  developer: number;
+
+  @IsOptional()
+  genres?: number[];
+
+  @IsOptional()
+  publisher?: number;
+
+  @IsOptional()
+  zone?: number;
+
+  @IsOptional()
+  tags?: number[];
 }

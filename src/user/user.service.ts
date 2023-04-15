@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Collection } from 'src/collection/entities/collection.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -10,6 +11,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Collection)
+    private readonly collectionRepository: Repository<Collection>,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -30,7 +33,15 @@ export class UserService {
     }
 
     const newUser = this.usersRepository.create({ ...createUserDto });
-    return await this.usersRepository.save(newUser);
+
+    const _user = await this.usersRepository.save(newUser);
+
+    const collection = this.collectionRepository.create({
+      user: _user,
+    });
+    await this.collectionRepository.save(collection);
+
+    return _user;
   }
 
   async findAll() {
