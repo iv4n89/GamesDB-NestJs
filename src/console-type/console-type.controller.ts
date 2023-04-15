@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ConsoleTypeService } from './console-type.service';
 import { CreateConsoleTypeDto } from './dto/create-console-type.dto';
 import { UpdateConsoleTypeDto } from './dto/update-console-type.dto';
@@ -18,17 +27,20 @@ export class ConsoleTypeController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.consoleTypeService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.consoleTypeService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateConsoleTypeDto: UpdateConsoleTypeDto) {
-    return this.consoleTypeService.update(+id, updateConsoleTypeDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateConsoleTypeDto: UpdateConsoleTypeDto,
+  ) {
+    return this.consoleTypeService.update(id, updateConsoleTypeDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.consoleTypeService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.consoleTypeService.remove(id);
   }
 }

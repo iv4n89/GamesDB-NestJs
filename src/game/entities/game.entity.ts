@@ -4,6 +4,7 @@ import { Developer } from 'src/developer/entities/developer.entity';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { Publisher } from 'src/publisher/entities/publisher.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
+import { UserGameStatic } from 'src/user-game-statics/entities/user-game-static.entity';
 import { Zone } from 'src/zone/entities/zone.entity';
 import {
   Column,
@@ -11,6 +12,7 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -52,4 +54,7 @@ export class Game {
 
   @ManyToMany(() => Collection, (collection) => collection.games)
   collections: Collection[];
+
+  @OneToMany(() => UserGameStatic, (gameStatic) => gameStatic.game)
+  userGameStatics: UserGameStatic[];
 }

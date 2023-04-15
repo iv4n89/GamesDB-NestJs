@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ManufacturerService } from './manufacturer.service';
 import { CreateManufacturerDto } from './dto/create-manufacturer.dto';
@@ -26,20 +27,20 @@ export class ManufacturerController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.manufacturerService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.manufacturerService.findOne(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateManufacturerDto: UpdateManufacturerDto,
   ) {
-    return this.manufacturerService.update(+id, updateManufacturerDto);
+    return this.manufacturerService.update(id, updateManufacturerDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.manufacturerService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.manufacturerService.remove(id);
   }
 }

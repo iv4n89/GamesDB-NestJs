@@ -81,13 +81,13 @@ export class GameService {
   }
 
   findAll() {
-    return this.gameRepository.find();
+    return this.gameRepository.find({ relations: ['tags'] });
   }
 
   async findOne(id: number) {
     const game: Game = await this.gameRepository.findOne({
       where: { id },
-      relations: ['console'],
+      relations: ['console', 'tags'],
     });
 
     if (!game) {
@@ -213,6 +213,54 @@ export class GameService {
 
     Object.assign(game, updateGameDto);
     return await this.gameRepository.save(game);
+  }
+
+  async addTags(id: number, tags: number[]) {
+    const game: Game = await this.gameRepository.findOne({
+      where: { id },
+      relations: ['tags'],
+    });
+    if (!game) {
+      const errors = { id: 'Game could not be found' };
+      throw new HttpException(
+        { message: 'Could not add tags to game', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const _tags: Tag[] = await this.tagRepository.find({
+      where: { id: In(tags) },
+    });
+    if (_tags.some((t) => !tags.includes(t.id))) {
+      const errors = { tags: 'Any of the tags could not be found' };
+      throw new HttpException(
+        { message: 'Could not add tags to game', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const newTags: Tag[] = [
+      ...new Map(
+        [...(game.tags ?? []), ..._tags].map((e) => [e.id, e]),
+      ).values(),
+    ];
+    game.tags = newTags;
+    return this.gameRepository.save(game);
+  }
+
+  async deleteTags(id: number, tags: number[]) {
+    const game: Game = await this.gameRepository.findOne({
+      where: { id },
+      relations: ['tags'],
+    });
+    if (!game) {
+      const errors = { id: 'Game could not be found' };
+      throw new HttpException(
+        { message: 'Could not delete tags from game', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const _tags: Tag[] = game.tags.filter((t) => !tags.includes(t.id));
+    game.tags = _tags;
+    return this.gameRepository.save(game);
   }
 
   remove(id: number) {

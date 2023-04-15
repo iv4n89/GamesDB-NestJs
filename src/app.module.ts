@@ -15,6 +15,7 @@ import { PublisherModule } from './publisher/publisher.module';
 import { ZoneModule } from './zone/zone.module';
 import { TagModule } from './tag/tag.module';
 import { CollectionModule } from './collection/collection.module';
+import { UserGameStaticsModule } from './user-game-statics/user-game-statics.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -44,6 +45,7 @@ import configuration from './config/configuration';
     ZoneModule,
     TagModule,
     CollectionModule,
+    UserGameStaticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

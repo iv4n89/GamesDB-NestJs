@@ -1,0 +1,10 @@
+{
+  "configurations": [
+    {
+      "name": "Debug nest",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npx nest start --debug --watch"
+    }
+  ]
+}

@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { DeveloperService } from './developer.service';
 import { CreateDeveloperDto } from './dto/create-developer.dto';
 import { UpdateDeveloperDto } from './dto/update-developer.dto';
@@ -18,17 +27,20 @@ export class DeveloperController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.developerService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.developerService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDeveloperDto: UpdateDeveloperDto) {
-    return this.developerService.update(+id, updateDeveloperDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateDeveloperDto: UpdateDeveloperDto,
+  ) {
+    return this.developerService.update(id, updateDeveloperDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.developerService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.developerService.remove(id);
   }
 }

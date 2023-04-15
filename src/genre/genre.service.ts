@@ -59,18 +59,37 @@ export class GenreService {
     const genre: Genre = await this.findOne(id);
 
     if (updateGenreDto.games) {
-      const games = [];
-      for (const gameId of updateGenreDto.games) {
-        const game: Game = await this.gameRepository.findOne({
-          where: { id: gameId },
-        });
-        games.push(game);
-      }
-      genre.games = [...new Set([...genre.games, ...games])];
       delete updateGenreDto.games;
     }
 
     Object.assign(genre, updateGenreDto);
+    return this.genreRepository.save(genre);
+  }
+
+  async addGames(id: number, games: number[]) {
+    const genre: Genre = await this.genreRepository.findOneOrFail({
+      where: { id },
+      relations: ['games'],
+    });
+    const _games: Game[] = await this.gameRepository.find({
+      where: { id: In(games) },
+    });
+    const newGames: Game[] = [
+      ...new Map(
+        [...(genre.games ?? []), ..._games].map((e) => [e.id, e]),
+      ).values(),
+    ];
+    genre.games = newGames;
+    return this.genreRepository.save(genre);
+  }
+
+  async deleteGames(id: number, games: number[]) {
+    const genre: Genre = await this.genreRepository.findOneOrFail({
+      where: { id },
+      relations: ['games'],
+    });
+    const _games = genre.games.filter((g) => !games.includes(g.id));
+    genre.games = _games;
     return this.genreRepository.save(genre);
   }
 

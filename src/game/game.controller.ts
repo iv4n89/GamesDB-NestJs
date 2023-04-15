@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { GameService } from './game.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
+import { AddTag, DeleteTag } from './dto/add-delete-tag.dto';
 
 @Controller('game')
 export class GameController {
@@ -31,12 +33,28 @@ export class GameController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
-    return this.gameService.update(+id, updateGameDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateGameDto: UpdateGameDto,
+  ) {
+    return this.gameService.update(id, updateGameDto);
+  }
+
+  @Patch(':id/add/tags')
+  addTags(@Param('id', ParseIntPipe) id: number, @Body() { tags }: AddTag) {
+    return this.gameService.addTags(id, tags);
+  }
+
+  @Patch(':id/delete/tags')
+  deleteTags(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() { tags }: DeleteTag,
+  ) {
+    return this.gameService.deleteTags(id, tags);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.gameService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.gameService.remove(id);
   }
 }

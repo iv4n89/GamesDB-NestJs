@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { PublisherService } from './publisher.service';
 import { CreatePublisherDto } from './dto/create-publisher.dto';
 import { UpdatePublisherDto } from './dto/update-publisher.dto';
@@ -18,17 +27,20 @@ export class PublisherController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.publisherService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.publisherService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePublisherDto: UpdatePublisherDto) {
-    return this.publisherService.update(+id, updatePublisherDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePublisherDto: UpdatePublisherDto,
+  ) {
+    return this.publisherService.update(id, updatePublisherDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.publisherService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.publisherService.remove(id);
   }
 }

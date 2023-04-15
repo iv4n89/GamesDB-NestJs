@@ -7,7 +7,7 @@ services:
       target: development
     volumes:
       - ./:/usr/src/app
-    command: npm run start:dev
+    command: tail -f /dev/null
     ports:
       - 3000:3000
 

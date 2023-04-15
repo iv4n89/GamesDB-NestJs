@@ -1,5 +1,12 @@
 import { Collection } from 'src/collection/entities/collection.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { UserGameStatic } from 'src/user-game-statics/entities/user-game-static.entity';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'users' })
 export class User {
@@ -26,4 +33,7 @@ export class User {
 
   @OneToOne(() => Collection, (collection) => collection.user)
   collection: Collection;
+
+  @OneToMany(() => UserGameStatic, (gameStatic) => gameStatic.user)
+  userGameStatics: UserGameStatic[];
 }

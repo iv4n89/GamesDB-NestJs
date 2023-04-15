@@ -107,22 +107,59 @@ export class ConsoleService {
     }
 
     if (updateConsoleDto?.tags) {
-      const tags: Tag[] = await this.tagRepository.find({
-        where: { id: In(updateConsoleDto?.tags) },
-      });
-      if (tags.some((tag) => tag === null || tag === undefined)) {
-        const errors = { tag: 'Any of the tags can not be found' };
-        throw new HttpException(
-          { message: 'Update can not be performed', errors },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      console.tags = tags;
       delete updateConsoleDto.tags;
     }
 
     Object.assign(console, updateConsoleDto);
     return await this.consoleRepository.save(console);
+  }
+
+  async addTags(id: number, tags: number[]) {
+    const console: Console = await this.consoleRepository.findOne({
+      where: { id },
+      relations: ['tags'],
+    });
+    if (!console) {
+      const errors = { id: 'Console could not be found' };
+      throw new HttpException(
+        { message: 'Add tags to console could not be performed', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const _tags: Tag[] = await this.tagRepository.find({
+      where: { id: In(tags) },
+    });
+    if (_tags.some((t) => !tags.includes(t.id))) {
+      const errors = { tags: 'Any of the tags could not be found' };
+      throw new HttpException(
+        { message: 'Add tags to console could not be performed', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const newTags: Tag[] = [
+      ...new Map(
+        [...(console?.tags ?? []), ..._tags].map((e) => [e.id, e]),
+      ).values(),
+    ];
+    console.tags = newTags;
+    return this.consoleRepository.save(console);
+  }
+
+  async deleteTags(id: number, tags: number[]) {
+    const console: Console = await this.consoleRepository.findOne({
+      where: { id },
+      relations: ['tags'],
+    });
+    if (!console) {
+      const errors = { id: 'Console could not be found' };
+      throw new HttpException(
+        { message: 'Delete tags to console could not be performed', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const _tags: Tag[] = console.tags.filter((t) => !tags.includes(t.id));
+    console.tags = _tags;
+    return this.consoleRepository.save(console);
   }
 
   remove(id: number) {
