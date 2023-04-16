@@ -7,7 +7,9 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Request,
 } from '@nestjs/common';
+import { User } from 'src/user/entities/user.entity';
 import { CollectionService } from './collection.service';
 import { AddConsoleDto, DeleteConsoleDto } from './dto/add-delete-consoles.dto';
 import { AddGameDto, DeleteGameDto } from './dto/add-delete-games.dto';
@@ -47,23 +49,27 @@ export class CollectionController {
   }
 
   @Patch('add/consoles')
-  addConsole(@Body() { consoles, userId }: AddConsoleDto) {
-    return this.collectionService.addConsoles(+userId, consoles);
+  addConsole(@Body() { consoles }: AddConsoleDto, @Request() req) {
+    const user: User = req.user;
+    return this.collectionService.addConsoles(user.id, consoles);
   }
 
   @Patch('delete/consoles')
-  deleteConsole(@Body() { consoles, userId }: DeleteConsoleDto) {
-    return this.collectionService.deleteConsoles(+userId, consoles);
+  deleteConsole(@Body() { consoles }: DeleteConsoleDto, @Request() req) {
+    const user: User = req.user;
+    return this.collectionService.deleteConsoles(user.id, consoles);
   }
 
   @Patch('add/games')
-  addGames(@Body() { games, userId }: AddGameDto) {
-    return this.collectionService.addGames(+userId, games);
+  addGames(@Body() { games }: AddGameDto, @Request() req) {
+    const user: User = req.user;
+    return this.collectionService.addGames(user.id, games);
   }
 
   @Patch('delete/games')
-  deleteGames(@Body() { games, userId }: DeleteGameDto) {
-    return this.collectionService.deleteGames(+userId, games);
+  deleteGames(@Body() { games }: DeleteGameDto, @Request() req) {
+    const user: User = req.user;
+    return this.collectionService.deleteGames(user.id, games);
   }
 
   @Delete(':id')

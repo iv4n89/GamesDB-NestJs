@@ -7,7 +7,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
+import { Admin } from 'src/auth/roles/role.decorator';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 import { ZoneService } from './zone.service';
@@ -16,6 +19,8 @@ import { ZoneService } from './zone.service';
 export class ZoneController {
   constructor(private readonly zoneService: ZoneService) {}
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Post()
   create(@Body() createZoneDto: CreateZoneDto) {
     return this.zoneService.create(createZoneDto);
@@ -31,6 +36,8 @@ export class ZoneController {
     return this.zoneService.findOne(id);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -39,6 +46,8 @@ export class ZoneController {
     return this.zoneService.update(id, updateZoneDto);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.zoneService.remove(id);

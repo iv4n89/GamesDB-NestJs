@@ -1,5 +1,6 @@
 import { IsOptional } from 'class-validator';
-import { Collection } from 'src/collection/entities/collection.entity';
+import { Following } from 'src/collection/entities/following.entity';
+import { GameOwn } from 'src/collection/entities/game-own.entity';
 import { BaseEntity } from 'src/common/BaseEntity.entity';
 import { Price } from 'src/common/entities/Price.entity';
 import { Console } from 'src/console/entities/console.entity';
@@ -7,19 +8,15 @@ import { Developer } from 'src/developer/entities/developer.entity';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { Publisher } from 'src/publisher/entities/publisher.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
-import { UserGameStatic } from 'src/user-game-statics/entities/user-game-static.entity';
 import { Zone } from 'src/zone/entities/zone.entity';
 import {
-  AfterInsert,
   AfterLoad,
-  AfterUpdate,
   Column,
   Entity,
   JoinColumn,
   ManyToMany,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity({ name: 'games' })
@@ -55,17 +52,17 @@ export class Game extends BaseEntity {
   @ManyToMany(() => Tag, (tag) => tag.games)
   tags: Tag[];
 
-  @ManyToMany(() => Collection, (collection) => collection.games)
-  collections: Collection[];
-
-  @OneToMany(() => UserGameStatic, (gameStatic) => gameStatic.game)
-  userGameStatics: UserGameStatic[];
+  @OneToMany(() => GameOwn, (gameStatic) => gameStatic.game)
+  gameOwns: GameOwn[];
 
   @OneToMany(() => Price, (price) => price.game)
   prices: Price[];
 
   @IsOptional()
   lastPrice: Price;
+
+  @OneToMany(() => Following, (following) => following.game)
+  followings: Following[];
 
   @AfterLoad()
   getLastPrice() {

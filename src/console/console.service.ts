@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConsoleType } from 'src/console-type/entities/console-type.entity';
-import { PriceCreatedEvent } from 'src/events/PriceCreatedEvent';
 import { eventNames } from 'src/events/eventNames';
+import { PriceCreatedEvent } from 'src/events/PriceCreatedEvent';
 import { PriceDeletedEvent } from 'src/events/PriceDeletedEvent';
 import { PriceUpdatedEvent } from 'src/events/PriceUpdatedEvent';
 import { Manufacturer } from 'src/manufacturer/entities/manufacturer.entity';
@@ -63,7 +63,7 @@ export class ConsoleService {
 
     if (createConsoleDto?.price) {
       this.eventEmitter.emit(
-        eventNames.console.price.created,
+        eventNames.price.created,
         new PriceCreatedEvent({
           console: _console,
           price: createConsoleDto?.price.price,

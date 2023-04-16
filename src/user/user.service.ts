@@ -44,9 +44,11 @@ export class UserService {
     const newUser = this.usersRepository.create({
       ...rest,
       password: hashedPassword,
-      role: (!!createUserDto?.role && await this.roleRepository.findOne({
-        where: { id: createUserDto?.role },
-      })),
+      role:
+        !!createUserDto?.role &&
+        (await this.roleRepository.findOne({
+          where: { id: createUserDto?.role },
+        })),
     });
 
     const _user = await this.usersRepository.save(newUser);
@@ -79,7 +81,7 @@ export class UserService {
   login(username: string) {
     return this.usersRepository.findOneOrFail({
       where: { username },
-      relations: ['collection.games', 'collection.consoles'],
+      relations: ['role'],
     });
   }
 
@@ -94,6 +96,14 @@ export class UserService {
     }
 
     delete updateUserDto.password;
+
+    if (updateUserDto?.role) {
+      const role: Role = await this.roleRepository.findOneOrFail({
+        where: { id: updateUserDto?.role },
+      });
+      user.role = role;
+      delete updateUserDto.role;
+    }
 
     Object.assign(user, updateUserDto);
     return await this.usersRepository.save(user);

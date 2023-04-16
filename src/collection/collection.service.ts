@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Console } from 'src/console/entities/console.entity';
-import { CollectionGameAddedEvent } from 'src/events/CollectionGameAddedEvent';
-import { CollectionGameDeletedEvent } from 'src/events/CollectionGameDeletedEvent';
 import { eventNames } from 'src/events/eventNames';
 import { UserCreatedEvent } from 'src/events/UserCreatedEvent.event';
 import { Game } from 'src/game/entities/game.entity';
@@ -11,6 +9,8 @@ import { In, Repository } from 'typeorm';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { Collection } from './entities/collection.entity';
+import { ConsoleOwn } from './entities/console-own.entity';
+import { GameOwn } from './entities/game-own.entity';
 
 @Injectable()
 export class CollectionService {
@@ -21,8 +21,11 @@ export class CollectionService {
     private readonly consoleRepository: Repository<Console>,
     @InjectRepository(Game)
     private readonly gameRepository: Repository<Game>,
-    private readonly eventsEmitter: EventEmitter2,
-  ) { }
+    @InjectRepository(ConsoleOwn)
+    private readonly consoleOwnRepository: Repository<ConsoleOwn>,
+    @InjectRepository(GameOwn)
+    private readonly gameOwnRepository: Repository<GameOwn>,
+  ) {}
 
   create(createCollectionDto: CreateCollectionDto) {
     return 'This action adds a new collection';
@@ -47,7 +50,7 @@ export class CollectionService {
   findOneByUser(userId: number) {
     return this.collectionRepository.findOne({
       where: { user: { id: userId } },
-      relations: ['consoles', 'games'],
+      relations: ['consoleOwns.console', 'gameOwns.game'],
     });
   }
 
@@ -71,84 +74,86 @@ export class CollectionService {
       where: { user: { id: userId } },
     });
 
-    const _consoles: Console[] = collection.consoles;
+    const _consoles: ConsoleOwn[] = collection.consoleOwns ?? [];
     const consolesToAdd: Console[] = await this.consoleRepository.find({
       where: { id: In(consoles) },
     });
-    const newConsoles = [
+    const newConsoles: Console[] = [
       ...new Map(
-        [...(_consoles ?? []), ...consolesToAdd].map((e) => [e.id, e]),
+        [...(_consoles?.map((c) => c.console) ?? []), ...consolesToAdd].map(
+          (e) => [e.id, e],
+        ),
       ).values(),
     ];
-    collection.consoles = newConsoles;
-    return this.collectionRepository.save(collection);
+    for (const console of newConsoles) {
+      if (
+        await this.consoleOwnRepository.exist({
+          where: { console: { id: console.id } },
+        })
+      ) {
+        continue;
+      }
+      const cOwn: ConsoleOwn = this.consoleOwnRepository.create({
+        collection,
+        console,
+      });
+      await this.consoleOwnRepository.save(cOwn);
+    }
   }
 
   async deleteConsoles(userId: number, consoles: number[]) {
     const collection: Collection = await this.collectionRepository.findOne({
       where: { user: { id: userId } },
-      relations: ['consoles'],
+      relations: ['consoleOwns.console'],
     });
 
-    const _consoles: Console[] = collection.consoles.filter(
-      (c) => !consoles.includes(c.id),
-    );
-    collection.consoles = _consoles;
-    return this.collectionRepository.save(collection);
+    collection.consoleOwns
+      .filter((c) => consoles.includes(c.console.id))
+      .forEach(
+        async ({ id }) => await this.consoleOwnRepository.delete({ id }),
+      );
   }
 
   async addGames(userId: number, games: number[]) {
     const collection: Collection = await this.collectionRepository.findOne({
       where: { user: { id: userId } },
-      relations: ['games.userGameStatics'],
     });
 
-    const _games: Game[] = collection.games;
+    const _games: GameOwn[] = collection.gameOwns ?? [];
     const gamesToAdd: Game[] = await this.gameRepository.find({
       where: { id: In(games) },
     });
-    for (const game of gamesToAdd) {
-      this.eventsEmitter.emit(
-        eventNames.collection.add.game,
-        new CollectionGameAddedEvent({
-          collectionId: collection.id,
-          userId: userId,
-          game,
-        }),
-      );
-    }
     const newGames: Game[] = [
       ...new Map(
-        [...(_games ?? []), ...gamesToAdd].map((e) => [e.id, e]),
+        [...(_games?.map((g) => g.game) ?? []), ...gamesToAdd].map((e) => [
+          e.id,
+          e,
+        ]),
       ).values(),
     ];
-    collection.games = newGames;
-    return this.collectionRepository.save(collection);
+    for (const game of newGames) {
+      if (
+        await this.gameOwnRepository.exist({ where: { game: { id: game.id } } })
+      ) {
+        continue;
+      }
+      const gOwn: GameOwn = this.gameOwnRepository.create({
+        collection,
+        game,
+      });
+      await this.gameOwnRepository.save(gOwn);
+    }
   }
 
   async deleteGames(userId: number, games: number[]) {
     const collection: Collection = await this.collectionRepository.findOne({
       where: { user: { id: userId } },
-      relations: ['games.userGameStatics'],
+      relations: ['gameOwns.game'],
     });
 
-    this.eventsEmitter.emit(
-      eventNames.collection.delete.games,
-      new CollectionGameDeletedEvent({
-        ids: collection.games
-          .filter(g => games.includes(g.id))
-          .map((g) => g.userGameStatics)
-          .filter((gs) => gs.length)
-          .flatMap((gs) => gs.map((e) => e.id)),
-      }),
-    );
-
-    const _games: Game[] = collection.games.filter(
-      (g) => !games.includes(g.id),
-    );
-
-    collection.games = _games;
-    return this.collectionRepository.save(collection);
+    collection.gameOwns
+      .filter((g) => games.includes(g.game.id))
+      .forEach(async ({ id }) => await this.gameOwnRepository.delete({ id }));
   }
 
   remove(id: number) {

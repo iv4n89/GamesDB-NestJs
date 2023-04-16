@@ -1,5 +1,6 @@
 import { IsOptional } from 'class-validator';
-import { Collection } from 'src/collection/entities/collection.entity';
+import { ConsoleOwn } from 'src/collection/entities/console-own.entity';
+import { Following } from 'src/collection/entities/following.entity';
 import { BaseEntity } from 'src/common/BaseEntity.entity';
 import { Price } from 'src/common/entities/Price.entity';
 import { ConsoleType } from 'src/console-type/entities/console-type.entity';
@@ -58,14 +59,17 @@ export class Console extends BaseEntity {
   @ManyToMany(() => Tag, (tag) => tag.consoles)
   tags: Tag[];
 
-  @ManyToMany(() => Collection, (collection) => collection.consoles)
-  collections: Collection[];
+  @ManyToOne(() => ConsoleOwn, (consoleOwn) => consoleOwn.console)
+  consoleOwns: ConsoleOwn[];
 
   @OneToMany(() => Price, (price) => price.console)
   prices: Price[];
 
   @IsOptional()
   lastPrice: Price;
+
+  @OneToMany(() => Following, (following) => following.console)
+  followings: Following[];
 
   @AfterLoad()
   getLastPrice() {

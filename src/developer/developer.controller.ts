@@ -7,7 +7,10 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
+import { Admin } from 'src/auth/roles/role.decorator';
 import { DeveloperService } from './developer.service';
 import { CreateDeveloperDto } from './dto/create-developer.dto';
 import { UpdateDeveloperDto } from './dto/update-developer.dto';
@@ -16,6 +19,8 @@ import { UpdateDeveloperDto } from './dto/update-developer.dto';
 export class DeveloperController {
   constructor(private readonly developerService: DeveloperService) {}
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Post()
   create(@Body() createDeveloperDto: CreateDeveloperDto) {
     return this.developerService.create(createDeveloperDto);
@@ -31,6 +36,8 @@ export class DeveloperController {
     return this.developerService.findOne(id);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -39,6 +46,8 @@ export class DeveloperController {
     return this.developerService.update(id, updateDeveloperDto);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.developerService.remove(id);

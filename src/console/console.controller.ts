@@ -1,13 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
+import { Admin } from 'src/auth/roles/role.decorator';
 import { DeleteTag } from 'src/game/dto/add-delete-tag.dto';
 import { ConsoleService } from './console.service';
 import { AddTag } from './dto/add-delete-tags.dto';
@@ -19,6 +22,8 @@ import { UpdateConsoleDto } from './dto/update-console.dto';
 export class ConsoleController {
   constructor(private readonly consoleService: ConsoleService) {}
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Post()
   create(@Body() createConsoleDto: CreateConsoleDto) {
     return this.consoleService.create(createConsoleDto);
@@ -39,6 +44,8 @@ export class ConsoleController {
     return this.consoleService.getAllConsolePrices(id);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -47,6 +54,8 @@ export class ConsoleController {
     return this.consoleService.update(id, updateConsoleDto);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Patch('price/:id/update')
   updatePrice(
     @Param('id', ParseIntPipe) id: number,
@@ -55,16 +64,22 @@ export class ConsoleController {
     return this.consoleService.updateConsolePrice(id, price);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Delete('price/:id/delete')
   deletePrice(@Param('id', ParseIntPipe) id: number) {
     return this.consoleService.deleteConsolePrice(id);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Patch(':id/add/tags')
   addTags(@Param('id', ParseIntPipe) id: number, @Body() { tags }: AddTag) {
     return this.consoleService.addTags(id, tags);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Patch(':id/delete/tags')
   deleteTags(
     @Param('id', ParseIntPipe) id: number,
@@ -73,6 +88,8 @@ export class ConsoleController {
     return this.consoleService.deleteTags(id, tags);
   }
 
+  @UseGuards(AuthenticatedGuard)
+  @Admin()
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.consoleService.remove(id);
