@@ -1,7 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Console } from 'src/console/entities/console.entity';
 import { Developer } from 'src/developer/entities/developer.entity';
+import { eventNames } from 'src/events/eventNames';
+import { PriceCreatedEvent } from 'src/events/PriceCreatedEvent';
+import { PriceDeletedEvent } from 'src/events/PriceDeletedEvent';
+import { PriceUpdatedEvent } from 'src/events/PriceUpdatedEvent';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { Publisher } from 'src/publisher/entities/publisher.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
@@ -28,6 +33,7 @@ export class GameService {
     private readonly zoneRepository: Repository<Zone>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(createGameDto: CreateGameDto) {
@@ -77,28 +83,31 @@ export class GameService {
           }))) ||
         undefined,
     });
-    return this.gameRepository.save(game);
+    const _game: Game = await this.gameRepository.save(game);
+
+    if (createGameDto?.price) {
+      this.eventEmitter.emit(
+        eventNames.game.price.created,
+        new PriceCreatedEvent({
+          game: _game,
+          price: createGameDto?.price.price,
+          currency: createGameDto?.price?.currency,
+        }),
+      );
+    }
+
+    return _game;
   }
 
   findAll() {
     return this.gameRepository.find({ relations: ['tags'] });
   }
 
-  async findOne(id: number) {
-    const game: Game = await this.gameRepository.findOne({
+  findOne(id: number) {
+    return this.gameRepository.findOneOrFail({
       where: { id },
-      relations: ['console', 'tags'],
+      relations: ['console', 'tags', 'prices'],
     });
-
-    if (!game) {
-      const errors = { id: 'Game not found' };
-      throw new HttpException(
-        { message: 'Game seems to not to exist', errors },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    return game;
   }
 
   async findMany(ids: number[]) {
@@ -211,8 +220,53 @@ export class GameService {
       delete updateGameDto.tags;
     }
 
+    if (updateGameDto?.price) {
+      if (updateGameDto?.price) {
+        this.eventEmitter.emit(
+          eventNames.price.created,
+          new PriceCreatedEvent({
+            game,
+            price: updateGameDto?.price.price,
+            currency: updateGameDto?.price?.currency,
+          }),
+        );
+      }
+
+      delete updateGameDto.price;
+    }
+
     Object.assign(game, updateGameDto);
     return await this.gameRepository.save(game);
+  }
+
+  updateGamePrice(
+    priceId: number,
+    price: { price: number; currency?: string },
+  ) {
+    this.eventEmitter.emit(
+      eventNames.price.updated,
+      new PriceUpdatedEvent({
+        priceId,
+        price,
+      }),
+    );
+  }
+
+  deleteGamePrice(priceId: number) {
+    this.eventEmitter.emit(
+      eventNames.console.price.deleted,
+      new PriceDeletedEvent({
+        priceId,
+      }),
+    );
+  }
+
+  async getAllGamePrices(id: number) {
+    const game: Game = await this.gameRepository.findOneOrFail({
+      where: { id },
+      relations: ['prices'],
+    });
+    return game.prices;
   }
 
   async addTags(id: number, tags: number[]) {

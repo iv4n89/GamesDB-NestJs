@@ -1,9 +1,12 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Console } from 'src/console/entities/console.entity';
+import { CollectionGameAddedEvent } from 'src/events/CollectionGameAddedEvent';
+import { CollectionGameDeletedEvent } from 'src/events/CollectionGameDeletedEvent';
+import { eventNames } from 'src/events/eventNames';
+import { UserCreatedEvent } from 'src/events/UserCreatedEvent.event';
 import { Game } from 'src/game/entities/game.entity';
-import { UserGameStatic } from 'src/user-game-statics/entities/user-game-static.entity';
-import { User } from 'src/user/entities/user.entity';
 import { In, Repository } from 'typeorm';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
@@ -18,14 +21,19 @@ export class CollectionService {
     private readonly consoleRepository: Repository<Console>,
     @InjectRepository(Game)
     private readonly gameRepository: Repository<Game>,
-    @InjectRepository(UserGameStatic)
-    private readonly userGameStaticRepository: Repository<UserGameStatic>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-  ) {}
+    private readonly eventsEmitter: EventEmitter2,
+  ) { }
 
   create(createCollectionDto: CreateCollectionDto) {
     return 'This action adds a new collection';
+  }
+
+  @OnEvent(eventNames.user.created, { async: true })
+  async handleUserCreatedEvent(payload: UserCreatedEvent) {
+    const collection: Collection = this.collectionRepository.create({
+      user: payload.props.payload,
+    });
+    await this.collectionRepository.save(collection);
   }
 
   findAll() {
@@ -100,22 +108,14 @@ export class CollectionService {
       where: { id: In(games) },
     });
     for (const game of gamesToAdd) {
-      if (
-        !(await this.userGameStaticRepository.exist({
-          where: {
-            user: { id: userId },
-            game: { id: game.id },
-          },
-        }))
-      ) {
-        const userGameStatic = this.userGameStaticRepository.create({
-          user: await this.userRepository.findOneOrFail({
-            where: { id: userId },
-          }),
+      this.eventsEmitter.emit(
+        eventNames.collection.add.game,
+        new CollectionGameAddedEvent({
+          collectionId: collection.id,
+          userId: userId,
           game,
-        });
-        await this.userGameStaticRepository.save(userGameStatic);
-      }
+        }),
+      );
     }
     const newGames: Game[] = [
       ...new Map(
@@ -132,17 +132,21 @@ export class CollectionService {
       relations: ['games.userGameStatics'],
     });
 
-    collection.games.forEach(async (g) => {
-      if (g.userGameStatics.length) {
-        await this.userGameStaticRepository.delete({
-          id: In(g.userGameStatics.map((e) => e.id).map(Number)),
-        });
-      }
-    });
+    this.eventsEmitter.emit(
+      eventNames.collection.delete.games,
+      new CollectionGameDeletedEvent({
+        ids: collection.games
+          .filter(g => games.includes(g.id))
+          .map((g) => g.userGameStatics)
+          .filter((gs) => gs.length)
+          .flatMap((gs) => gs.map((e) => e.id)),
+      }),
+    );
 
     const _games: Game[] = collection.games.filter(
       (g) => !games.includes(g.id),
     );
+
     collection.games = _games;
     return this.collectionRepository.save(collection);
   }

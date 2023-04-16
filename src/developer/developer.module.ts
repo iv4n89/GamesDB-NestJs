@@ -1,10 +1,9 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { DeveloperService } from './developer.service';
-import { DeveloperController } from './developer.controller';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Developer } from './entities/developer.entity';
-import { CountryModule } from 'src/country/country.module';
 import { Country } from 'src/country/entities/country.entity';
+import { DeveloperController } from './developer.controller';
+import { DeveloperService } from './developer.service';
+import { Developer } from './entities/developer.entity';
 
 @Module({
   controllers: [DeveloperController],

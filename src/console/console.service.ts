@@ -1,6 +1,11 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConsoleType } from 'src/console-type/entities/console-type.entity';
+import { PriceCreatedEvent } from 'src/events/PriceCreatedEvent';
+import { eventNames } from 'src/events/eventNames';
+import { PriceDeletedEvent } from 'src/events/PriceDeletedEvent';
+import { PriceUpdatedEvent } from 'src/events/PriceUpdatedEvent';
 import { Manufacturer } from 'src/manufacturer/entities/manufacturer.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
 import { In, Repository } from 'typeorm';
@@ -19,6 +24,7 @@ export class ConsoleService {
     private readonly consoleTypeRepository: Repository<ConsoleType>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(createConsoleDto: CreateConsoleDto) {
@@ -40,17 +46,33 @@ export class ConsoleService {
       ...createConsoleDto,
       manufacturer,
       type:
-        !!createConsoleDto?.type &&
-        (await this.consoleTypeRepository.findOne({
-          where: { id: createConsoleDto?.type },
-        })),
+        (!!createConsoleDto?.type &&
+          (await this.consoleTypeRepository.findOne({
+            where: { id: createConsoleDto?.type },
+          }))) ||
+        undefined,
       tags:
-        !!createConsoleDto?.tags &&
-        (await this.tagRepository.find({
-          where: { id: In(createConsoleDto?.tags) },
-        })),
+        (!!createConsoleDto?.tags &&
+          (await this.tagRepository.find({
+            where: { id: In(createConsoleDto?.tags) },
+          }))) ||
+        undefined,
     });
-    return this.consoleRepository.save(console);
+
+    const _console = await this.consoleRepository.save(console);
+
+    if (createConsoleDto?.price) {
+      this.eventEmitter.emit(
+        eventNames.console.price.created,
+        new PriceCreatedEvent({
+          console: _console,
+          price: createConsoleDto?.price.price,
+          currency: createConsoleDto?.price?.currency,
+        }),
+      );
+    }
+
+    return _console;
   }
 
   findAll() {
@@ -58,9 +80,9 @@ export class ConsoleService {
   }
 
   findOne(id: number) {
-    return this.consoleRepository.findOne({
+    return this.consoleRepository.findOneOrFail({
       where: { id },
-      relations: ['games', 'manufacturer'],
+      relations: ['games', 'manufacturer', 'prices'],
     });
   }
 
@@ -110,8 +132,50 @@ export class ConsoleService {
       delete updateConsoleDto.tags;
     }
 
+    if (updateConsoleDto?.price) {
+      this.eventEmitter.emit(
+        eventNames.price.created,
+        new PriceCreatedEvent({
+          console,
+          price: updateConsoleDto?.price?.price,
+          currency: updateConsoleDto?.price?.currency,
+        }),
+      );
+      delete updateConsoleDto.price;
+    }
+
     Object.assign(console, updateConsoleDto);
     return await this.consoleRepository.save(console);
+  }
+
+  updateConsolePrice(
+    priceId: number,
+    price: { price: number; currency?: string },
+  ) {
+    this.eventEmitter.emit(
+      eventNames.price.updated,
+      new PriceUpdatedEvent({
+        priceId,
+        price,
+      }),
+    );
+  }
+
+  deleteConsolePrice(priceId: number) {
+    this.eventEmitter.emit(
+      eventNames.console.price.deleted,
+      new PriceDeletedEvent({
+        priceId,
+      }),
+    );
+  }
+
+  async getAllConsolePrices(id: number) {
+    const console: Console = await this.consoleRepository.findOneOrFail({
+      where: { id },
+      relations: ['prices'],
+    });
+    return console.prices;
   }
 
   async addTags(id: number, tags: number[]) {

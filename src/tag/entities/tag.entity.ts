@@ -1,18 +1,10 @@
+import { BaseEntity } from 'src/common/BaseEntity.entity';
 import { Console } from 'src/console/entities/console.entity';
 import { Game } from 'src/game/entities/game.entity';
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 
 @Entity({ name: 'tags' })
-export class Tag {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Tag extends BaseEntity {
   @Column('varchar')
   name: string;
 

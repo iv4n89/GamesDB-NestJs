@@ -12,6 +12,7 @@ import { DeleteTag } from 'src/game/dto/add-delete-tag.dto';
 import { ConsoleService } from './console.service';
 import { AddTag } from './dto/add-delete-tags.dto';
 import { CreateConsoleDto } from './dto/create-console.dto';
+import { UpdateConsolePriceDto } from './dto/update-console-price.dto';
 import { UpdateConsoleDto } from './dto/update-console.dto';
 
 @Controller('console')
@@ -33,12 +34,30 @@ export class ConsoleController {
     return this.consoleService.findOne(id);
   }
 
+  @Get(':id/prices')
+  findConsolePrices(@Param('id', ParseIntPipe) id: number) {
+    return this.consoleService.getAllConsolePrices(id);
+  }
+
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateConsoleDto: UpdateConsoleDto,
   ) {
     return this.consoleService.update(id, updateConsoleDto);
+  }
+
+  @Patch('price/:id/update')
+  updatePrice(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() price: UpdateConsolePriceDto,
+  ) {
+    return this.consoleService.updateConsolePrice(id, price);
+  }
+
+  @Delete('price/:id/delete')
+  deletePrice(@Param('id', ParseIntPipe) id: number) {
+    return this.consoleService.deleteConsolePrice(id);
   }
 
   @Patch(':id/add/tags')

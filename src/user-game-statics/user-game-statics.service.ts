@@ -1,8 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CollectionGameAddedEvent } from 'src/events/CollectionGameAddedEvent';
+import { CollectionGameDeletedEvent } from 'src/events/CollectionGameDeletedEvent';
+import { eventNames } from 'src/events/eventNames';
 import { Game } from 'src/game/entities/game.entity';
 import { User } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateUserGameStaticDto } from './dto/create-user-game-static.dto';
 import { UpdateUserGameStaticDto } from './dto/update-user-game-static.dto';
 import { UserGameStatic } from './entities/user-game-static.entity';
@@ -37,6 +41,33 @@ export class UserGameStaticsService {
       },
     );
     return this.userGameStaticRepository.save(userGameStatic);
+  }
+
+  @OnEvent(eventNames.collection.add.game, { async: true })
+  async handleGameAddedToCollection(payload: CollectionGameAddedEvent) {
+    if (
+      !(await this.userGameStaticRepository.exist({
+        where: {
+          user: { id: payload.props.userId },
+          game: { id: payload.props.game.id },
+        },
+      }))
+    ) {
+      const userGameStatic = this.userGameStaticRepository.create({
+        user: await this.userRepository.findOneOrFail({
+          where: { id: payload.props.userId },
+        }),
+        game: payload.props.game,
+      });
+      await this.userGameStaticRepository.save(userGameStatic);
+    }
+  }
+
+  @OnEvent(eventNames.collection.delete.games, { async: true })
+  async handleGameDeletedFromCollection(payload: CollectionGameDeletedEvent) {
+    await this.userGameStaticRepository.delete({
+      id: In(payload.props.ids),
+    });
   }
 
   findAll() {

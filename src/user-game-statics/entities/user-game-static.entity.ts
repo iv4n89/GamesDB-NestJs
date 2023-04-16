@@ -1,12 +1,7 @@
+import { BaseEntity } from 'src/common/BaseEntity.entity';
 import { Game } from 'src/game/entities/game.entity';
 import { User } from 'src/user/entities/user.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 export type UserGameStaticStatus =
   | 'NOT_PLAYED'
@@ -17,10 +12,7 @@ export type UserGameStaticStatus =
   | 'DROPPED';
 
 @Entity({ name: 'user_game_statics' })
-export class UserGameStatic {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class UserGameStatic extends BaseEntity {
   @ManyToOne(() => User, (user) => user.userGameStatics)
   @JoinColumn({ name: 'user_id' })
   user: User;

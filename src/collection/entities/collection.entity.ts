@@ -1,3 +1,4 @@
+import { BaseEntity } from 'src/common/BaseEntity.entity';
 import { Console } from 'src/console/entities/console.entity';
 import { Game } from 'src/game/entities/game.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -11,9 +12,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'collections' })
-export class Collection {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class Collection extends BaseEntity {
 
   @OneToOne(() => User, (user) => user.collection)
   @JoinColumn({ name: 'user_id' })

@@ -1,18 +1,10 @@
 import { Collection } from 'src/collection/entities/collection.entity';
+import { BaseEntity } from 'src/common/BaseEntity.entity';
 import { UserGameStatic } from 'src/user-game-statics/entities/user-game-static.entity';
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 
 @Entity({ name: 'users' })
-export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class User extends BaseEntity {
   @Column('varchar')
   name: string;
 

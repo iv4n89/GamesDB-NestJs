@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Collection } from 'src/collection/entities/collection.entity';
+import { eventNames } from 'src/events/eventNames';
+import { UserCreatedEvent } from 'src/events/UserCreatedEvent.event';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -11,8 +13,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-    @InjectRepository(Collection)
-    private readonly collectionRepository: Repository<Collection>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -36,10 +37,13 @@ export class UserService {
 
     const _user = await this.usersRepository.save(newUser);
 
-    const collection = this.collectionRepository.create({
-      user: _user,
-    });
-    await this.collectionRepository.save(collection);
+    this.eventEmitter.emit(
+      eventNames.user.created,
+      new UserCreatedEvent({
+        userId: _user.id,
+        payload: _user,
+      }),
+    );
 
     return _user;
   }

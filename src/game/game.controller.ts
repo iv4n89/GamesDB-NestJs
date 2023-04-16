@@ -12,6 +12,7 @@ import { GameService } from './game.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { AddTag, DeleteTag } from './dto/add-delete-tag.dto';
+import { UpdateGamePriceDto } from './dto/update-game-price.dto';
 
 @Controller('game')
 export class GameController {
@@ -32,12 +33,30 @@ export class GameController {
     return this.gameService.findOne(+id);
   }
 
+  @Get(':id/prices')
+  findGamePrices(@Param('id', ParseIntPipe) id: number) {
+    return this.gameService.getAllGamePrices(id);
+  }
+
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGameDto: UpdateGameDto,
   ) {
     return this.gameService.update(id, updateGameDto);
+  }
+
+  @Patch('price/:id/update')
+  updatePrice(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() price: UpdateGamePriceDto,
+  ) {
+    return this.gameService.updateGamePrice(id, price);
+  }
+
+  @Delete('price/:id/delete')
+  deletePrice(@Param('id', ParseIntPipe) id: number) {
+    return this.gameService.deleteGamePrice(id);
   }
 
   @Patch(':id/add/tags')

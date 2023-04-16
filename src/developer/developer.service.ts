@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CountryService } from 'src/country/country.service';
 import { Country } from 'src/country/entities/country.entity';
 import { Repository } from 'typeorm';
 import { CreateDeveloperDto } from './dto/create-developer.dto';

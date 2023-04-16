@@ -1,17 +1,9 @@
+import { BaseEntity } from 'src/common/BaseEntity.entity';
 import { Game } from 'src/game/entities/game.entity';
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 
 @Entity({ name: 'genres' })
-export class Genre {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Genre extends BaseEntity {
   @Column('varchar')
   name: string;
 

@@ -17,9 +17,13 @@ import { TagModule } from './tag/tag.module';
 import { CollectionModule } from './collection/collection.module';
 import { UserGameStaticsModule } from './user-game-statics/user-game-statics.module';
 import configuration from './config/configuration';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventsModule } from './events/events.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       load: [configuration],
     }),
@@ -46,6 +50,8 @@ import configuration from './config/configuration';
     TagModule,
     CollectionModule,
     UserGameStaticsModule,
+    EventsModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

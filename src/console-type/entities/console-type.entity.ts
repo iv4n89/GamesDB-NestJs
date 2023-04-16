@@ -1,11 +1,10 @@
+import { BaseEntity } from 'src/common/BaseEntity.entity';
 import { Console } from 'src/console/entities/console.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'console-types' })
-export class ConsoleType {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class ConsoleType extends BaseEntity {
+  
   @Column('varchar')
   name: string;
 

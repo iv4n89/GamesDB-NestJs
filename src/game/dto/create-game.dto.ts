@@ -30,4 +30,10 @@ export class CreateGameDto {
 
   @IsOptional()
   tags?: number[];
+
+  @IsOptional()
+  price?: {
+    price: number;
+    currency?: string;
+  };
 }

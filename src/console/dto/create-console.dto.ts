@@ -45,4 +45,7 @@ export class CreateConsoleDto {
 
   @IsOptional()
   tags?: number[];
+
+  @IsOptional()
+  price: { price: number; currency?: string };
 }

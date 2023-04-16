@@ -1,16 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { UserGameStaticsService } from './user-game-statics.service';
 import { CreateUserGameStaticDto } from './dto/create-user-game-static.dto';
 import { UpdateUserGameStaticDto } from './dto/update-user-game-static.dto';
+import { UserGameStaticsService } from './user-game-statics.service';
 
 @Controller('user-game-statics')
 export class UserGameStaticsController {
