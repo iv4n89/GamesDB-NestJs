@@ -1,7 +1,8 @@
 import { Collection } from 'src/collection/entities/collection.entity';
 import { BaseEntity } from 'src/common/BaseEntity.entity';
 import { UserGameStatic } from 'src/user-game-statics/entities/user-game-static.entity';
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { Role } from './roles.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -20,7 +21,7 @@ export class User extends BaseEntity {
   @Column('varchar', { unique: true })
   username: string;
 
-  @Column('varchar', { select: false })
+  @Column('varchar')
   password: string;
 
   @OneToOne(() => Collection, (collection) => collection.user)
@@ -28,4 +29,8 @@ export class User extends BaseEntity {
 
   @OneToMany(() => UserGameStatic, (gameStatic) => gameStatic.user)
   userGameStatics: UserGameStatic[];
+
+  @ManyToOne(() => Role, role => role.users)
+  @JoinColumn({ name: 'role_id' })
+  role: Role;
 }

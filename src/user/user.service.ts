@@ -7,12 +7,16 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
+import { Role } from './entities/roles.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -33,7 +37,17 @@ export class UserService {
       );
     }
 
-    const newUser = this.usersRepository.create({ ...createUserDto });
+    const { password, ...rest } = createUserDto;
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const newUser = this.usersRepository.create({
+      ...rest,
+      password: hashedPassword,
+      role: (!!createUserDto?.role && await this.roleRepository.findOne({
+        where: { id: createUserDto?.role },
+      })),
+    });
 
     const _user = await this.usersRepository.save(newUser);
 
@@ -54,6 +68,19 @@ export class UserService {
 
   findOne(id: number) {
     return this.usersRepository.findOneBy({ id });
+  }
+
+  findOneByUsername(username: string) {
+    return this.usersRepository.findOneOrFail({
+      where: { username },
+    });
+  }
+
+  login(username: string) {
+    return this.usersRepository.findOneOrFail({
+      where: { username },
+      relations: ['collection.games', 'collection.consoles'],
+    });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {

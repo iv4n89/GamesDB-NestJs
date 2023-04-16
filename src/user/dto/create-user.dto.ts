@@ -40,4 +40,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
   username: string;
+
+  @IsOptional()
+  role?: number;
 }

@@ -10,6 +10,7 @@ import { PriceUpdatedEvent } from 'src/events/PriceUpdatedEvent';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { Publisher } from 'src/publisher/entities/publisher.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
+import { getGameCreatedRelations } from 'src/utils/gameServiceUtils';
 import { Zone } from 'src/zone/entities/zone.entity';
 import { In, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
@@ -87,7 +88,7 @@ export class GameService {
 
     if (createGameDto?.price) {
       this.eventEmitter.emit(
-        eventNames.game.price.created,
+        eventNames.price.created,
         new PriceCreatedEvent({
           game: _game,
           price: createGameDto?.price.price,
