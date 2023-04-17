@@ -1,0 +1,192 @@
+
+Table countries {
+  id int [pk, increment]
+  name varchar
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table users {
+  id int [pk, increment]
+  name varchar
+  lastName varchar
+  email varchar unique
+  birthdate date [null]
+  username varchar unique
+  password varchar
+  role int [ref: > roles.id]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table roles {
+  id int [pk, increment]
+  name varchar
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table consoles {
+  id int [pk, increment]
+  name varchar
+  description varchar [null]
+  history text [null]
+  manufacturer_id int [ref: > manufacturers.id]
+  lauchDate date [null]
+  retirementDate date [null]
+  otherNames varbinary [null]
+  isSpecialEdition int [null, default: 0]
+  zone_id int [ref: > zones.id]
+  type int [ref: > "console-types".id]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table manufacturers {
+  id int [pk, increment]
+  name varchar
+  history text [null]
+  country_id int [ref: > countries.id]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table games {
+  id int [pk, increment]
+  name varchar
+  description varchar [null]
+  isSpecialEdition int [null, default: 0]
+  console_id int [ref: > consoles.id]
+  developer_id int [ref: > developers.id]
+  publisher_id int [ref: > publishers.id]
+  zone_id int [ref: > zones.id]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table genres {
+  id int [pk, increment]
+  name varchar
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table "games-genres" {
+  game_id int [ref: > games.id]
+  genre_id int [ref: > genres.id]
+}
+
+Table developers {
+  id int [pk, increment]
+  name varchar
+  country_id int [ref: > countries.id]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table publishers {
+  id int [pk, increment]
+  name varchar
+  country_id int [ref: > countries.id]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table collections {
+  id int [pk, increment]
+  user_id int [ref: - users.id]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table "game-owns" {
+  id int [pk, increment]
+  game_id int [ref: > games.id]
+  collection_id int [ref: > collections.id]
+  price_paid decimal [default: 0]
+  date_buyed date [null]
+  has_box int [default: 0]
+  has_manual int [default: 0]
+  hours_played int [default: 0]
+  status varchar [default: "good"]
+  state varchar [default: "not played"]
+  favorite int [default: 0]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table "console-owns" {
+  id int [pk, increment]
+  console_id int [ref: > consoles.id]
+  collection_id int [ref: > collections.id]
+  price_paid decimal [default: 0]
+  date_buyed date [null]
+  has_box int [default: 0]
+  has_manual int [default: 0]
+  state varchar [default: "good"]
+  favorite int [default: 0]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table tags {
+  id int [pk, increment]
+  name varchar
+  color varchar
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table "tags-consoles" {
+  tag_id int [ref: > tags.id]
+  console_id int [ref: > consoles.id]
+}
+
+Table "tags-games" {
+  tag_id int [ref: > tags.id]
+  game_id int [ref: > games.id]
+}
+
+Table "tags-console-owns" {
+  tag_id int [ref: > tags.id]
+  console_own_id int [ref: > "console-owns".id]
+}
+
+Table "tags-game-owns" {
+  tag_id int [ref: > tags.id]
+  game_own_id int [ref: > "game-owns".id]
+}
+
+Table zones {
+  id int [pk, increment]
+  name varchar
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table prices {
+  id int [pk, increment]
+  price float 
+  currency varchar [null, default: "dollar"]
+  console_id int [ref: > consoles.id]
+  game_id int [ref: > games.id]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table "console-types" {
+  id int [pk, increment]
+  name varchar
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table followings {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  game_id int [ref: > games.id, null]
+  console_id int [ref: > consoles.id, null]
+  last_price_date date [null]
+  last_price_amount decimal [null]
+  last_notification_date date [null]
+}

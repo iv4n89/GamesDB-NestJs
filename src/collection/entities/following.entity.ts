@@ -10,11 +10,11 @@ export class Following extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => Game, (game) => game.followings)
+  @ManyToOne(() => Game, (game) => game.followings, { nullable: true })
   @JoinColumn({ name: 'game_id' })
   game: Game;
 
-  @ManyToOne(() => Console, (console) => console.followings)
+  @ManyToOne(() => Console, (console) => console.followings, { nullable: true })
   @JoinColumn({ name: 'console_id' })
   console: Console;
 
