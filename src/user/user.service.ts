@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { eventNames } from 'src/events/eventNames';
@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { Role } from './entities/roles.entity';
 
 @Injectable()
-export class UserService {
+export class UserService implements OnModuleInit{
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
@@ -19,6 +19,32 @@ export class UserService {
     private readonly roleRepository: Repository<Role>,
     private eventEmitter: EventEmitter2,
   ) {}
+
+  async onModuleInit() {
+    if (!(await this.usersRepository.exist({ where: { name: 'admin' } }))) {
+      let role: Role = null;
+      if (!(await this.roleRepository.exist({ where: { name: 'admin' } }))) {
+        const adminRole: Role = this.roleRepository.create({
+          name: 'admin',
+          isAdmin: 1,
+        });
+        role = await this.roleRepository.save(adminRole);
+      } else {
+        role = await this.roleRepository.findOne({ where: { name: 'admin' } });
+      }
+
+      const admin = this.usersRepository.create({
+        name: 'admin',
+        lastName: 'admin',
+        email: 'admin@admin.com',
+        password: 'admin',
+        role,
+        username: 'admin',
+      });
+
+      await this.usersRepository.save(admin);
+    }
+  }
 
   async create(createUserDto: CreateUserDto) {
     const { username, email } = createUserDto;
