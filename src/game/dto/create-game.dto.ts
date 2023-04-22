@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateGameDto {
   @IsNotEmpty()
@@ -36,4 +42,24 @@ export class CreateGameDto {
     price: number;
     currency?: string;
   };
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  artwors?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  screenshots?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  coverImages?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  videos?: string[];
 }

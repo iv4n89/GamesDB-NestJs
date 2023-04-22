@@ -49,6 +49,9 @@ export class Console extends BaseEntity {
   @Column('varbinary', { nullable: true })
   boxImages: string[];
 
+  @Column('varbinary', { nullable: true })
+  videos: string[];
+
   @OneToMany(() => Game, (game) => game.console)
   games: Game[];
 

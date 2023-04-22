@@ -48,4 +48,19 @@ export class CreateConsoleDto {
 
   @IsOptional()
   price: { price: number; currency?: string };
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  consoleImages?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  boxImages?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  videos?: string[];
 }
