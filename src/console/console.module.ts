@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Favorite } from 'src/common/entities/Favorites.entity';
+import { Wanted } from 'src/common/entities/Wanted.entity';
 import { ConsoleType } from 'src/console-type/entities/console-type.entity';
 import { EventsModule } from 'src/events/events.module';
 import { Game } from 'src/game/entities/game.entity';
@@ -11,7 +13,15 @@ import { Console } from './entities/console.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Console, Game, Manufacturer, ConsoleType, Tag]),
+    TypeOrmModule.forFeature([
+      Console,
+      Game,
+      Manufacturer,
+      ConsoleType,
+      Tag,
+      Wanted,
+      Favorite,
+    ]),
     EventsModule,
   ],
   controllers: [ConsoleController],

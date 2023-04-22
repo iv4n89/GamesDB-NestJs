@@ -46,7 +46,4 @@ export class ConsoleOwn extends BaseEntity {
 
   @Column('varchar', { name: 'state', default: 'good' })
   state: ConsoleState;
-
-  @Column('int', { name: 'favorite', default: 0 })
-  favorite: 0 | 1;
 }

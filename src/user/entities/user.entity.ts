@@ -2,6 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Collection } from 'src/collection/entities/collection.entity';
 import { Following } from 'src/collection/entities/following.entity';
 import { BaseEntity } from 'src/common/BaseEntity.entity';
+import { Favorite } from 'src/common/entities/Favorites.entity';
+import { Wanted } from 'src/common/entities/Wanted.entity';
 import {
   Column,
   Entity,
@@ -48,4 +50,10 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Following, (following) => following.user)
   followings: Following[];
+
+  @OneToMany(() => Favorite, (favorite) => favorite.user)
+  favorites: Favorite[];
+
+  @OneToMany(() => Wanted, (wanted) => wanted.user)
+  wanted: Wanted[];
 }

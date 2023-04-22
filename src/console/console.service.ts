@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Favorite } from 'src/common/entities/Favorites.entity';
+import { Wanted } from 'src/common/entities/Wanted.entity';
 import { ConsoleType } from 'src/console-type/entities/console-type.entity';
 import { eventNames } from 'src/events/eventNames';
 import { PriceCreatedEvent } from 'src/events/PriceCreatedEvent';
@@ -8,6 +10,7 @@ import { PriceDeletedEvent } from 'src/events/PriceDeletedEvent';
 import { PriceUpdatedEvent } from 'src/events/PriceUpdatedEvent';
 import { Manufacturer } from 'src/manufacturer/entities/manufacturer.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
+import { User } from 'src/user/entities/user.entity';
 import { In, Repository } from 'typeorm';
 import { CreateConsoleDto } from './dto/create-console.dto';
 import { UpdateConsoleDto } from './dto/update-console.dto';
@@ -24,6 +27,10 @@ export class ConsoleService {
     private readonly consoleTypeRepository: Repository<ConsoleType>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+    @InjectRepository(Wanted)
+    private readonly wantedRepository: Repository<Wanted>,
+    @InjectRepository(Favorite)
+    private readonly favoriteRepository: Repository<Favorite>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -228,5 +235,80 @@ export class ConsoleService {
 
   remove(id: number) {
     return this.consoleRepository.delete({ id });
+  }
+
+  async addConsoleToFavorite(consoleId: number, user: User) {
+    const console = await this.consoleRepository.findOneOrFail({
+      where: { id: consoleId },
+    });
+
+    if (
+      await this.favoriteRepository.exist({
+        where: { user: { id: user.id }, console: { id: consoleId } },
+      })
+    ) {
+      return false;
+    }
+    const favorite = this.favoriteRepository.create({
+      console,
+      user,
+    });
+    return !!(await this.favoriteRepository.save(favorite));
+  }
+
+  async deleteConsoleFromFavorites(consoleId: number, user: User) {
+    if (
+      !(await this.favoriteRepository.exist({
+        where: { user: { id: user.id }, console: { id: consoleId } },
+      }))
+    ) {
+      const errors = { console: 'Console is not in favorites' };
+      throw new HttpException(
+        { message: 'Favorite delete has not been performed', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return !!(await this.favoriteRepository.delete({
+      user: { id: user.id },
+      console: { id: consoleId },
+    }));
+  }
+
+  async addConsoleToWanted(consoleId: number, user: User) {
+    const console = await this.consoleRepository.findOneOrFail({
+      where: { id: consoleId },
+    });
+    if (
+      await this.wantedRepository.exist({
+        where: { user: { id: user.id }, console: { id: consoleId } },
+      })
+    ) {
+      return false;
+    }
+
+    const wanted = this.wantedRepository.create({
+      user,
+      console,
+    });
+    return !!(await this.wantedRepository.save(wanted));
+  }
+
+  async deleteConsoleFromWanted(consoleId: number, user: User) {
+    if (
+      !(await this.wantedRepository.exist({
+        where: { user: { id: user.id }, console: { id: consoleId } },
+      }))
+    ) {
+      const errors = { console: 'Console is not in wanteds' };
+      throw new HttpException(
+        { message: 'Delete wanted could not been performed', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    await !!(await this.wantedRepository.delete({
+      user: { id: user.id },
+      console: { id: consoleId },
+    }));
   }
 }

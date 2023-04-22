@@ -2,7 +2,9 @@ import { IsOptional } from 'class-validator';
 import { Following } from 'src/collection/entities/following.entity';
 import { GameOwn } from 'src/collection/entities/game-own.entity';
 import { BaseEntity } from 'src/common/BaseEntity.entity';
+import { Favorite } from 'src/common/entities/Favorites.entity';
 import { Price } from 'src/common/entities/Price.entity';
+import { Wanted } from 'src/common/entities/Wanted.entity';
 import { Console } from 'src/console/entities/console.entity';
 import { Developer } from 'src/developer/entities/developer.entity';
 import { Genre } from 'src/genre/entities/genre.entity';
@@ -29,6 +31,18 @@ export class Game extends BaseEntity {
 
   @Column('int', { nullable: true, default: 0 })
   isSpecialEdition: number;
+
+  @Column('varbinary', { nullable: true })
+  artworks: string[];
+
+  @Column('varbinary', { nullable: true })
+  screenshots: string[];
+
+  @Column('varbinary', { nullable: true })
+  coverImages: string[];
+
+  @Column('varbinary', { nullable: true })
+  videos: string[];
 
   @ManyToOne(() => Console, (console) => console.games)
   @JoinColumn({ name: 'console_id' })
@@ -63,6 +77,12 @@ export class Game extends BaseEntity {
 
   @OneToMany(() => Following, (following) => following.game)
   followings: Following[];
+
+  @OneToMany(() => Favorite, (favorite) => favorite.game)
+  favorites: Favorite[];
+
+  @OneToMany(() => Wanted, (wanted) => wanted.game)
+  wanted: Wanted[];
 
   @AfterLoad()
   getLastPrice() {

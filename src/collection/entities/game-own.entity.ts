@@ -62,7 +62,4 @@ export class GameOwn extends BaseEntity {
 
   @Column('varchar', { name: 'state', default: 'not played' })
   status: GameStatus;
-
-  @Column('int', { name: 'favorite', default: 0 })
-  favorite: 0 | 1;
 }

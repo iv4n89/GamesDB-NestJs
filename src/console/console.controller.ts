@@ -7,11 +7,13 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
 import { Admin } from 'src/auth/roles/role.decorator';
 import { DeleteTag } from 'src/game/dto/add-delete-tag.dto';
+import { User } from 'src/user/entities/user.entity';
 import { ConsoleService } from './console.service';
 import { AddTag } from './dto/add-delete-tags.dto';
 import { CreateConsoleDto } from './dto/create-console.dto';
@@ -93,5 +95,29 @@ export class ConsoleController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.consoleService.remove(id);
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Post(':id/favorite')
+  addFavorite(@Param('id', ParseIntPipe) id: number, @Request() { user }) {
+    return this.consoleService.addConsoleToFavorite(id, user);
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Delete(':id/favorite')
+  deleteFavorite(@Param('id', ParseIntPipe) id: number, @Request() { user }) {
+    return this.consoleService.deleteConsoleFromFavorites(id, user);
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Post(':id/wanted')
+  addWanted(@Param('id', ParseIntPipe) id: number, @Request() { user }) {
+    return this.consoleService.addConsoleToWanted(id, user);
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Delete(':id/wanted')
+  deleteWanted(@Param('id', ParseIntPipe) id: number, @Request() { user }) {
+    return this.consoleService.deleteConsoleFromWanted(id, user);
   }
 }

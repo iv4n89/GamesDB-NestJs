@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
@@ -92,5 +93,29 @@ export class GameController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.gameService.remove(id);
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Post(':id/favorite')
+  addFavorite(@Param('id', ParseIntPipe) id: number, @Request() { user }) {
+    return this.gameService.addGameToFavorite(id, user);
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Delete(':id/favorite')
+  deleteFavorite(@Param('id', ParseIntPipe) id: number, @Request() { user }) {
+    return this.gameService.deleteGameFromFavorite(id, user);
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Post(':id/wanted')
+  addWanted(@Param('id', ParseIntPipe) id: number, @Request() { user }) {
+    return this.gameService.addGameToWanted(id, user);
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Delete(':id/wanted')
+  deleteWanted(@Param('id', ParseIntPipe) id: number, @Request() { user }) {
+    return this.gameService.deleteGameFromWanted(id, user);
   }
 }

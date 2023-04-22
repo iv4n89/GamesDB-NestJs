@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Favorite } from 'src/common/entities/Favorites.entity';
+import { Wanted } from 'src/common/entities/Wanted.entity';
 import { Console } from 'src/console/entities/console.entity';
 import { Developer } from 'src/developer/entities/developer.entity';
 import { Genre } from 'src/genre/entities/genre.entity';
@@ -20,6 +22,8 @@ import { GameService } from './game.service';
       Publisher,
       Zone,
       Tag,
+      Favorite,
+      Wanted,
     ]),
   ],
   controllers: [GameController],

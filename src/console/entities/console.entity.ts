@@ -2,7 +2,9 @@ import { IsOptional } from 'class-validator';
 import { ConsoleOwn } from 'src/collection/entities/console-own.entity';
 import { Following } from 'src/collection/entities/following.entity';
 import { BaseEntity } from 'src/common/BaseEntity.entity';
+import { Favorite } from 'src/common/entities/Favorites.entity';
 import { Price } from 'src/common/entities/Price.entity';
+import { Wanted } from 'src/common/entities/Wanted.entity';
 import { ConsoleType } from 'src/console-type/entities/console-type.entity';
 import { Game } from 'src/game/entities/game.entity';
 import { Manufacturer } from 'src/manufacturer/entities/manufacturer.entity';
@@ -41,6 +43,12 @@ export class Console extends BaseEntity {
   @Column('int', { nullable: true, default: 0 })
   isSpecialEdition: number;
 
+  @Column('varbinary', { nullable: true })
+  consoleImages: string[];
+
+  @Column('varbinary', { nullable: true })
+  boxImages: string[];
+
   @OneToMany(() => Game, (game) => game.console)
   games: Game[];
 
@@ -70,6 +78,12 @@ export class Console extends BaseEntity {
 
   @OneToMany(() => Following, (following) => following.console)
   followings: Following[];
+
+  @OneToMany(() => Favorite, (favorite) => favorite.console)
+  favorites: Favorite[];
+
+  @OneToMany(() => Wanted, (wanted) => wanted.console)
+  wanted: Wanted[];
 
   @AfterLoad()
   getLastPrice() {

@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Favorite } from 'src/common/entities/Favorites.entity';
+import { Wanted } from 'src/common/entities/Wanted.entity';
 import { Console } from 'src/console/entities/console.entity';
 import { Developer } from 'src/developer/entities/developer.entity';
 import { eventNames } from 'src/events/eventNames';
@@ -10,6 +12,7 @@ import { PriceUpdatedEvent } from 'src/events/PriceUpdatedEvent';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { Publisher } from 'src/publisher/entities/publisher.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
+import { User } from 'src/user/entities/user.entity';
 import { Zone } from 'src/zone/entities/zone.entity';
 import { In, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
@@ -33,6 +36,10 @@ export class GameService {
     private readonly zoneRepository: Repository<Zone>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+    @InjectRepository(Wanted)
+    private readonly wantedRepository: Repository<Wanted>,
+    @InjectRepository(Favorite)
+    private readonly favoriteRepository: Repository<Favorite>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -319,5 +326,79 @@ export class GameService {
 
   remove(id: number) {
     return this.gameRepository.delete({ id });
+  }
+
+  async addGameToFavorite(gameId: number, user: User) {
+    const game: Game = await this.gameRepository.findOneOrFail({
+      where: { id: gameId },
+    });
+    if (
+      await this.favoriteRepository.exist({
+        where: { user: { id: user.id }, game: { id: gameId } },
+      })
+    ) {
+      return false;
+    }
+    const favorite: Favorite = this.favoriteRepository.create({
+      user,
+      game,
+    });
+
+    return !!(await this.favoriteRepository.save(favorite));
+  }
+
+  async deleteGameFromFavorite(gameId: number, user: User) {
+    if (
+      !(await this.favoriteRepository.exist({
+        where: { user: { id: user.id }, game: { id: gameId } },
+      }))
+    ) {
+      const errors = { game: 'Game is not a favorite' };
+      throw new HttpException(
+        { message: 'Delete favorite has not been performed', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return !!(await this.favoriteRepository.delete({
+      user: { id: user.id },
+      game: { id: gameId },
+    }));
+  }
+
+  async addGameToWanted(gameId: number, user: User) {
+    const game: Game = await this.gameRepository.findOneOrFail({
+      where: { id: gameId },
+    });
+    if (
+      await this.wantedRepository.exist({
+        where: { user: { id: user.id }, game: { id: gameId } },
+      })
+    ) {
+      return false;
+    }
+    const wanted: Wanted = this.wantedRepository.create({
+      user,
+      game,
+    });
+
+    return !!(await this.wantedRepository.save(wanted));
+  }
+
+  async deleteGameFromWanted(gameId: number, user: User) {
+    if (
+      !(await this.wantedRepository.exist({
+        where: { user: { id: user.id }, game: { id: gameId } },
+      }))
+    ) {
+      const errors = { game: 'Game is not wanted' };
+      throw new HttpException(
+        { message: 'Delete wanted has not been performed', errors },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return !!(await this.wantedRepository.delete({
+      user: { id: user.id },
+      game: { id: gameId },
+    }));
   }
 }
